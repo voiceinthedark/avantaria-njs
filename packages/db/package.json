@@ -2,23 +2,24 @@
   "name": "@store/db",
   "version": "1.0.0",
   "description": "Avantaria Store Database Package",
-  "main": "index.js",
-  "types": "index.d.ts",
+  "main": "index.ts",
+  "types": "index.ts",
   "scripts": {
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
-    "db:seed": "ts-node prisma/seed.ts"
+    "db:seed": "tsx seed.ts"
   },
-  "keywords": [],
-  "author": "",
   "license": "ISC",
   "type": "module",
   "devDependencies": {
-    "@types/node": "^26.6.5",
-    "prisma": "8.0.0-rc.27"
+    "@types/node": "^20",
+    "prisma": "^7.10.1",
+    "tsx": "^4"
   },
   "dependencies": {
-    "@prisma/client": "^7.10.1"
+    "@prisma/adapter-pg": "^7.10.1",
+    "@prisma/client": "^7.10.1",
+    "dotenv": "^18.0.9"
   }
 }
