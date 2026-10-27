@@ -1,0 +1,7 @@
+allowBuilds:
+  sharp: false
+  unrs-resolver: false
+packages:
+  - "apps/*"
+  - "packages/*"
+  - "plugins/*"
