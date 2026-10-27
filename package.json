@@ -6,7 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "pnpm --filter @store/db db:generate",
+    "db:push": "pnpm --filter @store/db db:push",
+    "db:seed": "pnpm --filter @store/db db:seed"
   },
   "dependencies": {
     "next": "16.4.3",
