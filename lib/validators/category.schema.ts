@@ -13,18 +13,22 @@ export const createCategorySchema = z.object({
     ),
 });
 
-const updateCategorySchema = z.object({
-  id: z.uuid("Invalid Category ID format"),
-  name: z.string().min(2).optional(),
-  slug: z
-    .string()
-    .min(2)
-    .regex(
-      /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-      "Slug must be lower-case and hyphenated",
-    )
-    .optional(),
-});
+// Body only: the id comes from the route params (see getCategoryByIdSchema).
+export const updateCategorySchema = z
+  .object({
+    name: z.string().min(2).optional(),
+    slug: z
+      .string()
+      .min(2)
+      .regex(
+        /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+        "Slug must be lower-case and hyphenated",
+      )
+      .optional(),
+  })
+  .refine((v) => v.name !== undefined || v.slug !== undefined, {
+    message: "Nothing to update",
+  });
 
 export const getCategoryByIdSchema = z.object({
   id: z.uuid("Invalid Category ID format"),
