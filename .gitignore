@@ -42,3 +42,4 @@ next-env.d.ts
 /AGENTS.md
 /packages/db/node_modules
 /_oldfiles/api
+/oldfiles/api
