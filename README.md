@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Avantaria Clothing Store
 
-## Getting Started
+Avantaria Clothing Store is a modern and stylish online clothing store that offers
+a wide range of fashion apparel for men, women, and children. Our mission is to
+provide high-quality clothing at affordable prices while ensuring a seamless
+shopping experience for our customers.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **UI/UX Design**: A clean and intuitive user interface that makes browsing and
+  shopping easy.
+- **Product Catalog**: A comprehensive catalog of clothing items, including
+  detailed descriptions, sizes,
+  and high-resolution images.
+- **Shopping Cart**: A user-friendly shopping cart that allows customers to add,
+  remove, and update items easily.
+- **Checkout Process**: Support for home delivery and in-store pickup options.
+- **Social Media Integration**: Connect with customers through social media
+  platforms for promotions and updates.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Technologies Used
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Next.js**: A React framework for building server-side rendered applications.
+- **Tailwind CSS**: A utility-first CSS framework for styling the application.
+- **React**: A JavaScript library for building user interfaces.
+- **Database**: Prisma on top of PostgreSQL for database management and querying.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Tasks
 
-## Learn More
+- [ ] Set up the page structure and routing for the Next.js application.
+- [ ] Setup the database schema using Prisma and PostgreSQL.
+- [ ] Design the UI/UX for the clothing store.
+- [ ] Implement the shopping cart functionality.
+- [ ] Set up the checkout process with home delivery and in-store pickup options.
+- [ ] Implement the product catalog with detailed descriptions and images.
 
-To learn more about Next.js, take a look at the following resources:
+## Roadmap
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Phase 1**: Initial setup and configuration of the Next.js application and database.
+- **Phase 2**: Design and implement the UI/UX for the clothing store.
+- **Phase 3**: Develop the product catalog and shopping cart functionality.
+- **Phase 4**: Implement the checkout process and integrate social media features.

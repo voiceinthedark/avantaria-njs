@@ -27,13 +27,36 @@ export const createProductSchema = z.object({
   images: z.array(z.url()).optional().default([]),
 });
 
-export const updateProductSchema = z.object({
-  id: z.uuid("Invalid Product ID format"),
-  name: z.string().min(2).optional(),
-  description: z.string().min(10).optional(),
-  basePrice: z.number().positive().optional(),
-  categoryId: z.uuid().optional(),
-  isFeatured: z.boolean().optional(),
+// Body only: the id comes from the route params (see getProductByIdSchema).
+export const updateProductSchema = z
+  .object({
+    name: z.string().min(2).optional(),
+    slug: z
+      .string()
+      .min(2)
+      .regex(
+        /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+        "Slug must be lower-case and hyphenated",
+      )
+      .optional(),
+    description: z.string().min(10).optional(),
+    basePrice: z.number().positive().optional(),
+    categoryId: z.uuid().optional(),
+    isFeatured: z.boolean().optional(),
+    isActive: z.boolean().optional(),
+  })
+  .refine((v) => Object.values(v).some((x) => x !== undefined), {
+    message: "Nothing to update",
+  });
+
+export const listProductsQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  category: z.string().min(1).optional(), // category slug
+  featured: z
+    .enum(["true", "false"])
+    .transform((v) => v === "true")
+    .optional(),
 });
 
 export const getProductBySlugSchema = z.object({
@@ -46,5 +69,6 @@ export const getProductByIdSchema = z.object({
 
 export type CreateProductInput = z.infer<typeof createProductSchema>;
 export type UpdateProductInput = z.infer<typeof updateProductSchema>;
+export type ListProductsQuery = z.infer<typeof listProductsQuerySchema>;
 export type GetProductBySlugInput = z.infer<typeof getProductBySlugSchema>;
 export type GetProductByIdInput = z.infer<typeof getProductByIdSchema>;
