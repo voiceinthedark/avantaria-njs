@@ -12,7 +12,7 @@ export const registerSchema = z.object({
 });
 
 export const loginSchema = z.object({
-  email: z.email("Invalid email address"),
+  email: z.email("Invalid email address").toLowerCase(),
   password: z.string().min(1, "Password is required"),
 });
 
@@ -20,7 +20,7 @@ export const loginSchema = z.object({
 // very first ADMIN account. The secret is sent via the
 // `x-bootstrap-key` header (validated in the route), not the body.
 export const bootstrapAdminSchema = z.object({
-  email: z.email("Invalid email address"),
+  email: z.email("Invalid email address").toLowerCase(),
   password: passwordSchema,
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),

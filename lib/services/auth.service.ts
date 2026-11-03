@@ -2,11 +2,7 @@ import "server-only";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { AppError } from "@/lib/errors";
-import type {
-  RegisterInput,
-  LoginInput,
-  BootstrapAdminInput,
-} from "@/lib/validators/auth.schema";
+import type { RegisterInput, LoginInput, BootstrapAdminInput } from "@/lib/validators/auth.schema";
 
 const BCRYPT_ROUNDS = 12;
 
@@ -22,8 +18,7 @@ const publicUserSelect = {
 // Compared against when the email is unknown so that response time
 // doesn't reveal whether an account exists.
 let dummyHash: Promise<string> | undefined;
-const getDummyHash = () =>
-  (dummyHash ??= bcrypt.hash("not-a-real-password", BCRYPT_ROUNDS));
+const getDummyHash = () => (dummyHash ??= bcrypt.hash("not-a-real-password", BCRYPT_ROUNDS));
 
 export class AuthService {
   static async register(data: RegisterInput) {
@@ -51,7 +46,7 @@ export class AuthService {
       throw new AppError(401, "Invalid email or password");
     }
 
-    const { passwordHash: _omit, ...publicUser } = user;
+    const { passwordHash: _omit, ...publicUser } = user; // eslint-disable-line @typescript-eslint/no-unused-vars
     return publicUser;
   }
 
