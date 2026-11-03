@@ -33,11 +33,34 @@ async function main() {
     },
   });
 
+  // Note: adding a random customer
+  const cPassword = "123456";
+  const cEmail = "customer@avantaria.com";
+  const cHashedPassword = await bcrypt.hash(cPassword, 12);
+  const cPhone = "+1234567891";
+
+  const existingCustomer = await prisma.user.findUnique({
+    where: { email: cEmail },
+  });
+
+  if (!existingCustomer) {
+    await prisma.user.create({
+      data: {
+        email: cEmail,
+        firstName: "Avantaria",
+        lastName: "Customer",
+        passwordHash: cHashedPassword,
+        phone: cPhone,
+        role: "CUSTOMER",
+      },
+    });
+    console.log("Created global customer user with email:", cEmail);
+    console.log("Customer password:", cPassword);
+  }
+
   console.log("Created global admin user with email:", email);
   console.log("Admin password:", password);
-  console.log(
-    "Please change the password after first login for security reasons.",
-  );
+  console.log("Please change the password after first login for security reasons.");
 }
 
 console.log("Connecting to database: ", process.env.DATABASE_URL);
