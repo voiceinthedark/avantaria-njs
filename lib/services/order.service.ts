@@ -2,7 +2,9 @@ import "server-only";
 import { Prisma, OrderStatus, PaymentStatus } from "@store/db";
 import { prisma } from "@/lib/db";
 import { AppError } from "@/lib/errors";
-import type { CreateOrderInput } from "@/lib/validators/order.schema";
+import type { CreateOrderInput, ListOrdersInput } from "@/lib/validators/order.schema";
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 type OrderLine = { variantId: string; quantity: number };
 
@@ -134,16 +136,52 @@ export class OrderService {
     });
   }
 
-  static async getAllOrders() {
-    return prisma.order.findMany({
-      include: {
-        user: {
-          select: { id: true, email: true, firstName: true, lastName: true },
+  /** Admin/Staff: paginated, filterable list of all orders. */
+  static async getAllOrders(query: ListOrdersInput) {
+    const { page, limit, status, paymentStatus, from, to, search } = query;
+
+    const createdAt: Prisma.DateTimeFilter = {};
+    if (from) createdAt.gte = new Date(`${from}T00:00:00.000Z`);
+    if (to) {
+      // `to` is an inclusive day, so cut off at the start of the next one.
+      const end = new Date(`${to}T00:00:00.000Z`);
+      end.setUTCDate(end.getUTCDate() + 1);
+      createdAt.lt = end;
+    }
+
+    const where: Prisma.OrderWhereInput = {
+      ...(status ? { status } : {}),
+      ...(paymentStatus ? { paymentStatus } : {}),
+      ...(from || to ? { createdAt } : {}),
+      ...(search
+        ? {
+          OR: [
+            ...(UUID_PATTERN.test(search) ? [{ id: search }] : []),
+            { user: { email: { contains: search, mode: "insensitive" as const } } },
+            { user: { firstName: { contains: search, mode: "insensitive" as const } } },
+            { user: { lastName: { contains: search, mode: "insensitive" as const } } },
+          ],
+        }
+        : {}),
+    };
+
+    const [total, items] = await prisma.$transaction([
+      prisma.order.count({ where }),
+      prisma.order.findMany({
+        where,
+        include: {
+          user: {
+            select: { id: true, email: true, firstName: true, lastName: true },
+          },
+          ...orderInclude,
         },
-        ...orderInclude,
-      },
-      orderBy: { createdAt: "desc" },
-    });
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+    ]);
+
+    return { items, page, limit, total, totalPages: Math.ceil(total / limit) };
   }
 
   static async getOrderById(id: string, userId: string, isAdminOrStaff: boolean) {

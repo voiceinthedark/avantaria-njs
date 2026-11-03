@@ -1,12 +1,13 @@
 import { handleRoute } from "@/lib/errors";
 import { requireStaff, requireUser } from "@/lib/auth/guards";
 import { OrderService } from "@/lib/services/order.service";
-import { createOrderSchema } from "@/lib/validators/order.schema";
+import { createOrderSchema, listOrdersSchema } from "@/lib/validators/order.schema";
 
-/** Admin/Staff: list all orders. */
-export const GET = handleRoute(async () => {
+/** Admin/Staff: paginated list of all orders (filters via query string). */
+export const GET = handleRoute(async (req) => {
   await requireStaff();
-  return Response.json(await OrderService.getAllOrders());
+  const query = listOrdersSchema.parse(Object.fromEntries(new URL(req.url).searchParams));
+  return Response.json(await OrderService.getAllOrders(query));
 });
 
 /** Customer: create an order (pay-on-delivery). */
