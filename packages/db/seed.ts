@@ -11,29 +11,8 @@ async function main() {
   const hashedPassword = await bcrypt.hash(password, 12);
   const phone = process.env.ADMIN_PHONE || "+1234567890";
 
-  // 1. Check if the global admin user already exists
-  const existingAdmin = await prisma.user.findUnique({
-    where: { email: email },
-  });
-
-  if (existingAdmin) {
-    console.log("Admin user already exists. Skipping seeding.");
-    return;
-  }
-
-  // 2. Seed database with global admin user
-  await prisma.user.create({
-    data: {
-      email: email,
-      firstName: "Avantaria",
-      lastName: "Admin",
-      passwordHash: hashedPassword, // Replace with a real hashed password
-      phone: phone,
-      role: "ADMIN",
-    },
-  });
-
-  // Note: adding a random customer
+  // STEP 0.1:
+  // NOTE: adding a random customer
   const cPassword = "123456";
   const cEmail = "customer@avantaria.com";
   const cHashedPassword = await bcrypt.hash(cPassword, 12);
@@ -57,6 +36,28 @@ async function main() {
     console.log("Created global customer user with email:", cEmail);
     console.log("Customer password:", cPassword);
   }
+
+  // 1. Check if the global admin user already exists
+  const existingAdmin = await prisma.user.findUnique({
+    where: { email: email },
+  });
+
+  if (existingAdmin) {
+    console.log("Admin user already exists. Skipping seeding.");
+    return;
+  }
+
+  // 2. Seed database with global admin user
+  await prisma.user.create({
+    data: {
+      email: email,
+      firstName: "Avantaria",
+      lastName: "Admin",
+      passwordHash: hashedPassword, // Replace with a real hashed password
+      phone: phone,
+      role: "ADMIN",
+    },
+  });
 
   console.log("Created global admin user with email:", email);
   console.log("Admin password:", password);
