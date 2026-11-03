@@ -43,3 +43,5 @@ next-env.d.ts
 /packages/db/node_modules
 /_oldfiles/api
 /oldfiles/api
+/.github
+/planAction1.md

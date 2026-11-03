@@ -6,7 +6,7 @@ import { createReviewSchema } from "@/lib/validators/review.schema";
 /** Customer: create a review for a purchased variant. */
 export const POST = handleRoute(async (req) => {
   const { userId } = await requireUser();
-  const { body } = createReviewSchema.parse({ body: await req.json() });
+  const body = createReviewSchema.parse(await req.json());
   return Response.json(await ReviewService.createReview(userId, body), {
     status: 201,
   });

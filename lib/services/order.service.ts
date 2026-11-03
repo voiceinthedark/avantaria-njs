@@ -1,5 +1,5 @@
 import "server-only";
-import { Prisma } from "@store/db";
+import { Prisma, OrderStatus, PaymentStatus } from "@store/db";
 import { prisma } from "@/lib/db";
 import { AppError } from "@/lib/errors";
 import type { CreateOrderInput } from "@/lib/validators/order.schema";
@@ -7,8 +7,17 @@ import type { CreateOrderInput } from "@/lib/validators/order.schema";
 type OrderLine = { variantId: string; quantity: number };
 
 export type OrderStatusUpdate = {
-  status?: Prisma.OrderUpdateInput["status"];
-  paymentStatus?: Prisma.OrderUpdateInput["paymentStatus"];
+  status?: OrderStatus;
+  paymentStatus?: PaymentStatus;
+};
+
+/** Allowed order status transitions. Final states have no way out. */
+const ORDER_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
+  PENDING: ["PROCESSING", "CANCELLED"],
+  PROCESSING: ["SHIPPED", "CANCELLED"],
+  SHIPPED: ["DELIVERED", "CANCELLED"],
+  DELIVERED: [],
+  CANCELLED: [],
 };
 
 const orderInclude = {
@@ -34,8 +43,7 @@ export class OrderService {
     }
 
     let totalCents = 0;
-    const orderItemsData: { variantId: string; quantity: number; price: number }[] =
-      [];
+    const orderItemsData: { variantId: string; quantity: number; price: number }[] = [];
 
     for (const item of items) {
       const variant = await tx.productVariant.findUnique({
@@ -47,9 +55,7 @@ export class OrderService {
         throw AppError.notFound(`Product variant ${item.variantId} not found`);
       }
       if (!variant.product.isActive) {
-        throw AppError.badRequest(
-          `Product "${variant.product.name}" is no longer available`,
-        );
+        throw AppError.badRequest(`Product "${variant.product.name}" is no longer available`);
       }
 
       // Atomic stock guard: only decrements if enough stock remains.
@@ -140,11 +146,7 @@ export class OrderService {
     });
   }
 
-  static async getOrderById(
-    id: string,
-    userId: string,
-    isAdminOrStaff: boolean,
-  ) {
+  static async getOrderById(id: string, userId: string, isAdminOrStaff: boolean) {
     const order = await prisma.order.findUnique({
       where: { id },
       include: orderInclude,
@@ -156,9 +158,11 @@ export class OrderService {
     return order;
   }
 
+  // TODO: Implement refund logic (payment gateway side)
   /**
-   * Updates order/payment status. Cancelling an order restores stock.
-   * Delivered/cancelled orders can no longer change status.
+   * Updates order/payment status. Status changes must follow
+   * ORDER_TRANSITIONS; cancelling an order restores stock.
+   * A cancelled order cannot be marked as paid.
    */
   static async updateOrderStatus(id: string, data: OrderStatusUpdate) {
     return prisma.$transaction(async (tx) => {
@@ -168,18 +172,25 @@ export class OrderService {
       });
       if (!order) throw AppError.notFound("Order not found");
 
-      const isFinalized =
-        order.status === "DELIVERED" || order.status === "CANCELLED";
-      const isChangingStatus =
-        data.status !== undefined && data.status !== order.status;
+      const newStatus = data.status;
+      const isChangingStatus = newStatus !== undefined && newStatus !== order.status;
 
-      if (isFinalized && isChangingStatus) {
-        throw AppError.conflict(
-          `Cannot change the status of an order that is already ${order.status.toLowerCase()}`,
-        );
+      // Validate everything BEFORE touching stock.
+      if (isChangingStatus && !ORDER_TRANSITIONS[order.status].includes(newStatus)) {
+        const isFinal = ORDER_TRANSITIONS[order.status].length === 0;
+        throw isFinal
+          ? AppError.conflict(
+            `Cannot change the status of an order that is already ${order.status.toLowerCase()}`,
+          )
+          : AppError.badRequest(`Invalid status transition from ${order.status} to ${newStatus}`);
       }
 
-      if (data.status === "CANCELLED" && order.status !== "CANCELLED") {
+      const finalStatus = newStatus ?? order.status;
+      if (finalStatus === "CANCELLED" && data.paymentStatus === "COMPLETED") {
+        throw AppError.conflict("A cancelled order cannot be marked as paid");
+      }
+
+      if (isChangingStatus && newStatus === "CANCELLED") {
         for (const item of order.items) {
           await tx.productVariant.update({
             where: { id: item.variantId },
@@ -188,7 +199,10 @@ export class OrderService {
         }
       }
 
-      return tx.order.update({ where: { id }, data });
+      return tx.order.update({
+        where: { id },
+        data: { status: data.status, paymentStatus: data.paymentStatus },
+      });
     });
   }
 }

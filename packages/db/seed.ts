@@ -9,6 +9,7 @@ async function main() {
   const email = process.env.ADMIN_EMAIL || "admin@avantaria.com";
   // hash password for the admin user
   const hashedPassword = await bcrypt.hash(password, 12);
+  const phone = process.env.ADMIN_PHONE || "+1234567890";
 
   // 1. Check if the global admin user already exists
   const existingAdmin = await prisma.user.findUnique({
@@ -27,6 +28,7 @@ async function main() {
       firstName: "Avantaria",
       lastName: "Admin",
       passwordHash: hashedPassword, // Replace with a real hashed password
+      phone: phone,
       role: "ADMIN",
     },
   });

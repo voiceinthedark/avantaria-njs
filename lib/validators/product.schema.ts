@@ -15,10 +15,7 @@ export const createProductSchema = z.object({
   slug: z
     .string()
     .min(2)
-    .regex(
-      /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-      "Slug must be lower-case and hyphenated",
-    ),
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug must be lower-case and hyphenated"),
   description: z.string().min(10, "Description must be at least 10 characters"),
   basePrice: z.number().positive("Base price must be greater than 0"),
   categoryId: z.uuid("Invalid Category ID format"),
@@ -27,6 +24,12 @@ export const createProductSchema = z.object({
   images: z.array(z.url()).optional().default([]),
 });
 
+export const updateProductVariantSchema = variantSchema
+  .partial()
+  .refine((v) => Object.values(v).some((x) => x !== undefined), { message: "Nothing to update" });
+
+export const createProductVariantSchema = variantSchema;
+
 // Body only: the id comes from the route params (see getProductByIdSchema).
 export const updateProductSchema = z
   .object({
@@ -34,10 +37,7 @@ export const updateProductSchema = z
     slug: z
       .string()
       .min(2)
-      .regex(
-        /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-        "Slug must be lower-case and hyphenated",
-      )
+      .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug must be lower-case and hyphenated")
       .optional(),
     description: z.string().min(10).optional(),
     basePrice: z.number().positive().optional(),
@@ -72,3 +72,5 @@ export type UpdateProductInput = z.infer<typeof updateProductSchema>;
 export type ListProductsQuery = z.infer<typeof listProductsQuerySchema>;
 export type GetProductBySlugInput = z.infer<typeof getProductBySlugSchema>;
 export type GetProductByIdInput = z.infer<typeof getProductByIdSchema>;
+export type CreateProductVariantInput = z.infer<typeof createProductVariantSchema>;
+export type UpdateProductVariantInput = z.infer<typeof updateProductVariantSchema>;

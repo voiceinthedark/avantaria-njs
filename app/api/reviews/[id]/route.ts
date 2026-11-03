@@ -11,17 +11,17 @@ type Ctx = { params: Promise<{ id: string }> };
 /** Author: update own review. */
 export const PATCH = handleRoute<Ctx>(async (req, { params }) => {
   const { userId } = await requireUser();
-  const { params: p, body } = updateReviewSchema.parse({
-    params: await params,
-    body: await req.json(),
+  const { id, ...body } = updateReviewSchema.parse({
+    ...(await req.json()),
+    ...(await params),
   });
-  return Response.json(await ReviewService.updateReview(p.id, userId, body));
+  return Response.json(await ReviewService.updateReview(id, userId, body));
 });
 
 /** Author or Admin/Staff: delete a review. */
 export const DELETE = handleRoute<Ctx>(async (_req, { params }) => {
   const session = await requireUser();
-  const { params: p } = deleteReviewSchema.parse({ params: await params });
-  await ReviewService.deleteReview(p.id, session.userId, isAdminOrStaff(session));
+  const { id } = deleteReviewSchema.parse(await params);
+  await ReviewService.deleteReview(id, session.userId, isAdminOrStaff(session));
   return new Response(null, { status: 204 });
 });

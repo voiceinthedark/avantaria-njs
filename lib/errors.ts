@@ -65,6 +65,13 @@ function toResponse(error: unknown): Response {
         { status: 409 },
       );
     }
+    if (error.code === "P2003") {
+      return Response.json(
+        { error: "Foreign key constraint failed" },
+        { status: 409 },
+      );
+    }
+
     if (error.code === "P2025") {
       return Response.json({ error: "Resource not found" }, { status: 404 });
     }

@@ -48,7 +48,24 @@ export const updateOrderStatusSchema = z
     "At least one of status or paymentStatus must be provided",
   );
 
+export const listOrdersSchema = z.object({
+  page: z.number().int().positive("Page must be a positive integer").optional(),
+  limit: z.number().int().positive("Limit must be a positive integer").optional(),
+  status: z.enum(OrderStatus).optional(),
+  paymentStatus: z.enum(PaymentStatus).optional(),
+});
+
+export const listOrdersForUserSchema = z.object({
+  page: z.number().int().positive("Page must be a positive integer").optional(),
+  limit: z.number().int().positive("Limit must be a positive integer").optional(),
+  status: z.enum(OrderStatus).optional(),
+  paymentStatus: z.enum(PaymentStatus).optional(),
+});
+
 export type CreateOrderInput = z.infer<typeof createOrderSchema>;
 export type CheckoutInput = z.infer<typeof checkoutSchema>;
 export type GetOrderByIdInput = z.infer<typeof getOrderByIdSchema>;
 export type UpdateOrderStatusInput = z.infer<typeof updateOrderStatusSchema>;
+export type ListOrdersInput = z.infer<typeof listOrdersSchema>;
+export type ListOrdersForUserInput = z.infer<typeof listOrdersForUserSchema>;
+

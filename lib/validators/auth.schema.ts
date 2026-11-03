@@ -4,7 +4,7 @@ import { z } from "zod";
 import { passwordSchema } from "./shared";
 
 export const registerSchema = z.object({
-  email: z.email("Invalid email address"),
+  email: z.email("Invalid email address").toLowerCase(),
   password: passwordSchema,
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
@@ -24,6 +24,7 @@ export const bootstrapAdminSchema = z.object({
   password: passwordSchema,
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
+  phone: z.string().regex(/^\+?[1-9]\d{1,14}$/, "Invalid phone number"),
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;

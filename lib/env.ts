@@ -1,6 +1,5 @@
 import "server-only";
 import { z } from "zod";
-import { AppError } from "./errors";
 
 /**
  * Validates all required environment variables at process startup.
@@ -8,23 +7,16 @@ import { AppError } from "./errors";
  * error instead of crashing unpredictably later at runtime.
  */
 const envSchema = z.object({
-  NODE_ENV: z
-    .enum(["development", "production", "test"])
-    .default("development"),
-  PORT: z.coerce.number().int().positive().default(5000),
+  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
 
-  JWT_SECRET: z
-    .string()
-    .min(32, "JWT_SECRET must be at least 32 characters long"),
+  JWT_SECRET: z.string().min(32, "JWT_SECRET must be at least 32 characters long"),
 
   // Supabase Storage (image uploads) — replaces Cloudinary, which is
   // unavailable in some regions.
   SUPABASE_URL: z.url("SUPABASE_URL must be a valid URL"),
-  SUPABASE_SERVICE_ROLE_KEY: z
-    .string()
-    .min(1, "SUPABASE_SERVICE_ROLE_KEY is required"),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1, "SUPABASE_SERVICE_ROLE_KEY is required"),
   SUPABASE_STORAGE_BUCKET: z.string().min(1).default("product-images"),
 
   // Temporary shared secret used to bootstrap the very first ADMIN account
@@ -43,9 +35,7 @@ if (!parsed.success) {
   for (const issue of parsed.error.issues) {
     console.error(`  - ${issue.path.join(".")}: ${issue.message}`);
   }
-  throw AppError.notFound(
-    "Invalid environment variables. See server logs for details.",
-  );
+  throw new Error("Invalid environment variables. See server logs for details.");
 }
 
 export const env = parsed.data;
