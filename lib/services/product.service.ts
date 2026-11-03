@@ -23,12 +23,15 @@ export class ProductService {
    * Public callers only see active products.
    */
   static async getProducts(query: ListProductsQuery, options: { includeInactive?: boolean } = {}) {
-    const { page, limit, category, featured } = query;
+    const { page, limit, category, featured, search, active } = query;
 
     const where = {
       ...(options.includeInactive ? {} : { isActive: true }),
+      // The active/inactive filter is admin-only: public callers always get active products.
+      ...(options.includeInactive && active !== undefined ? { isActive: active } : {}),
       ...(category ? { category: { slug: category } } : {}),
       ...(featured !== undefined ? { isFeatured: featured } : {}),
+      ...(search ? { name: { contains: search, mode: "insensitive" as const } } : {}),
     };
 
     const [total, products] = await prisma.$transaction([

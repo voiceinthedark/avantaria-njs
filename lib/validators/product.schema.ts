@@ -57,6 +57,13 @@ export const listProductsQuerySchema = z.object({
     .enum(["true", "false"])
     .transform((v) => v === "true")
     .optional(),
+  /** Case-insensitive match on the product name. */
+  search: z.string().trim().min(1).max(100).optional(),
+  /** Admin lists only: filter by active/inactive. Ignored for public callers. */
+  active: z
+    .enum(["true", "false"])
+    .transform((v) => v === "true")
+    .optional(),
 });
 
 export const getProductBySlugSchema = z.object({
