@@ -25,7 +25,11 @@ function cleanParams(searchParams: SearchParams) {
 
 const label = (value: string) => value.charAt(0) + value.slice(1).toLowerCase();
 
-export default async function OrdersPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+export default async function OrdersPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
   await requireStaffUser();
 
   const params = cleanParams(await searchParams);
@@ -89,8 +93,20 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
             </option>
           ))}
         </select>
-        <input name="from" type="date" defaultValue={params.from} aria-label="From date" className={inputClass} />
-        <input name="to" type="date" defaultValue={params.to} aria-label="To date" className={inputClass} />
+        <input
+          name="from"
+          type="date"
+          defaultValue={params.from}
+          aria-label="From date"
+          className={inputClass}
+        />
+        <input
+          name="to"
+          type="date"
+          defaultValue={params.to}
+          aria-label="To date"
+          className={inputClass}
+        />
 
         <div className="flex gap-2 sm:col-span-2 lg:col-span-6">
           <button type="submit" className={buttonClass}>
@@ -125,7 +141,14 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
             <tbody className="divide-y divide-foreground/10">
               {result.items.map((order) => (
                 <tr key={order.id}>
-                  <td className="px-4 py-3 font-mono text-xs">{order.id.slice(0, 8).toUpperCase()}</td>
+                  <td className="px-4 py-3 font-mono text-xs">
+                    <Link
+                      href={`${BASE_PATH}/${order.id}`}
+                      className="underline hover:text-foreground/70"
+                    >
+                      {order.id.slice(0, 8).toUpperCase()}
+                    </Link>
+                  </td>
                   <td className="px-4 py-3">
                     <p className="font-medium">
                       {order.user.firstName} {order.user.lastName}
@@ -136,7 +159,9 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
                   <td className="px-4 py-3 text-right">
                     {order.items.reduce((sum, item) => sum + item.quantity, 0)}
                   </td>
-                  <td className="px-4 py-3 text-right whitespace-nowrap">{formatCurrency(order.totalAmount)}</td>
+                  <td className="px-4 py-3 text-right whitespace-nowrap">
+                    {formatCurrency(order.totalAmount)}
+                  </td>
                   <td className="px-4 py-3">
                     <StatusBadge value={order.status} />
                   </td>

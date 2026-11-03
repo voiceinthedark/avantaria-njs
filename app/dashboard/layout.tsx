@@ -16,7 +16,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="flex flex-1 flex-col md:flex-row">
       <aside className="flex flex-col gap-6 border-b border-foreground/10 p-4 md:w-56 md:border-r md:border-b-0">
         <span className="text-base font-semibold">Avantaria</span>
-        <DashboardNav />
+        {/* usePathname() is request data on dynamic routes, so it needs a boundary. */}
+        <Suspense fallback={<div className="h-10" />}>
+          <DashboardNav />
+        </Suspense>
         <div className="md:mt-auto">
           <Suspense fallback={<div className="h-12" />}>
             <UserMenu />

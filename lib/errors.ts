@@ -1,4 +1,5 @@
 import "server-only";
+import { unstable_rethrow } from "next/navigation";
 import { ZodError } from "zod";
 import { Prisma } from "@store/db";
 
@@ -60,16 +61,10 @@ function toResponse(error: unknown): Response {
 
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     if (error.code === "P2002") {
-      return Response.json(
-        { error: "Resource already exists" },
-        { status: 409 },
-      );
+      return Response.json({ error: "Resource already exists" }, { status: 409 });
     }
     if (error.code === "P2003") {
-      return Response.json(
-        { error: "Foreign key constraint failed" },
-        { status: 409 },
-      );
+      return Response.json({ error: "Foreign key constraint failed" }, { status: 409 });
     }
 
     if (error.code === "P2025") {
@@ -95,6 +90,10 @@ export function handleRoute<C = unknown>(
     try {
       return await handler(req, ctx);
     } catch (error) {
+      // Next uses thrown errors for control flow (redirect, notFound, and the
+      // "this route reads cookies/headers" signal during prerendering).
+      // Swallowing them would break rendering, so let them through.
+      unstable_rethrow(error);
       return toResponse(error);
     }
   };
