@@ -96,9 +96,7 @@ export class StorageService {
   static async uploadImages(files: File[], folder = "products") {
     if (files.length === 0) throw AppError.badRequest("No images provided");
     if (files.length > MAX_IMAGES_PER_UPLOAD) {
-      throw AppError.badRequest(
-        `You can upload at most ${MAX_IMAGES_PER_UPLOAD} images at once`,
-      );
+      throw AppError.badRequest(`You can upload at most ${MAX_IMAGES_PER_UPLOAD} images at once`);
     }
 
     const uploaded: { path: string; url: string }[] = [];
@@ -108,9 +106,8 @@ export class StorageService {
       }
     } catch (error) {
       if (uploaded.length > 0) {
-        await StorageService.deleteImages(uploaded.map((u) => u.path)).catch(
-          (cleanupError) =>
-            console.error("Failed to clean up partial upload:", cleanupError),
+        await StorageService.deleteImages(uploaded.map((u) => u.path)).catch((cleanupError) =>
+          console.error("Failed to clean up partial upload:", cleanupError),
         );
       }
       throw error;
@@ -119,9 +116,7 @@ export class StorageService {
   }
 
   static async deleteImages(paths: string[]) {
-    const { error } = await supabase.storage
-      .from(env.SUPABASE_STORAGE_BUCKET)
-      .remove(paths);
+    const { error } = await supabase.storage.from(env.SUPABASE_STORAGE_BUCKET).remove(paths);
     if (error) {
       console.error("Supabase delete failed:", error);
       throw new Error("Image deletion failed");
@@ -133,5 +128,46 @@ export class StorageService {
       throw AppError.badRequest("Invalid image path");
     }
     await StorageService.deleteImages([path]);
+  }
+
+  /**
+   * Maps a public URL of this app's bucket back to its storage path.
+   * Returns null for any URL that isn't one of our uploaded images
+   * (external URLs, other buckets, unexpected file names).
+   */
+  static pathFromPublicUrl(url: string): string | null {
+    let parsed: URL;
+    let base: URL;
+    try {
+      parsed = new URL(url);
+      base = new URL(env.SUPABASE_URL);
+    } catch {
+      return null;
+    }
+    if (parsed.origin !== base.origin) return null;
+
+    const prefix = `/storage/v1/object/public/${env.SUPABASE_STORAGE_BUCKET}/`;
+    if (!parsed.pathname.startsWith(prefix)) return null;
+
+    const path = decodeURIComponent(parsed.pathname.slice(prefix.length));
+    return STORAGE_PATH_PATTERN.test(path) ? path : null;
+  }
+
+  /**
+   * Best-effort removal of the files behind the given public URLs.
+   * URLs that aren't ours are ignored. Never throws: a storage hiccup
+   * must not fail an operation whose database work already succeeded.
+   */
+  static async deleteByUrls(urls: string[]) {
+    const paths = urls
+      .map((u) => StorageService.pathFromPublicUrl(u))
+      .filter((p): p is string => p !== null);
+    if (paths.length === 0) return;
+
+    try {
+      await StorageService.deleteImages(paths);
+    } catch (error) {
+      console.error("Storage cleanup failed for:", paths, error);
+    }
   }
 }

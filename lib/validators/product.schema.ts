@@ -72,10 +72,28 @@ export const getProductVariantParamsSchema = z.object({
   variantId: z.uuid("Invalid Variant ID format"),
 });
 
+export const addProductImagesSchema = z.object({
+  images: z
+    .array(
+      z.object({
+        url: z.url("Invalid image URL"),
+        altText: z.string().max(200).optional(),
+      }),
+    )
+    .min(1, "At least one image is required")
+    .max(10, "At most 10 images at once"),
+});
+
+export const getProductImageParamsSchema = z.object({
+  id: z.uuid("Invalid Product ID format"),
+  imageId: z.uuid("Invalid Image ID format"),
+});
+
 export type CreateProductInput = z.infer<typeof createProductSchema>;
 export type UpdateProductInput = z.infer<typeof updateProductSchema>;
 export type ListProductsQuery = z.infer<typeof listProductsQuerySchema>;
 export type GetProductBySlugInput = z.infer<typeof getProductBySlugSchema>;
 export type GetProductByIdInput = z.infer<typeof getProductByIdSchema>;
 export type CreateProductVariantInput = z.infer<typeof createProductVariantSchema>;
+export type AddProductImagesInput = z.infer<typeof addProductImagesSchema>;
 export type UpdateProductVariantInput = z.infer<typeof updateProductVariantSchema>;

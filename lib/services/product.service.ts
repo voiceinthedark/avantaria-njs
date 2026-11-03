@@ -1,7 +1,9 @@
 import "server-only";
 import { prisma } from "@/lib/db";
 import { AppError } from "@/lib/errors";
+import { StorageService } from "@/lib/storage";
 import type {
+  AddProductImagesInput,
   CreateProductInput,
   CreateProductVariantInput,
   UpdateProductInput,
@@ -186,8 +188,57 @@ export class ProductService {
       return false;
     }
 
+    const images = await prisma.productImage.findMany({
+      where: { productId: id },
+      select: { url: true },
+    });
+
     await prisma.product.delete({ where: { id } });
+
+    // DB first, files second: a failed cleanup only leaves an orphan file.
+    await ProductService.cleanupImageFiles(images.map((i) => i.url));
     return true;
+  }
+
+  /**
+   * Deletes the storage files behind the given URLs, skipping any URL
+   * that another ProductImage row still references.
+   */
+  private static async cleanupImageFiles(urls: string[]) {
+    if (urls.length === 0) return;
+    const stillUsed = await prisma.productImage.findMany({
+      where: { url: { in: urls } },
+      select: { url: true },
+    });
+    const keep = new Set(stillUsed.map((i) => i.url));
+    await StorageService.deleteByUrls(urls.filter((u) => !keep.has(u)));
+  }
+
+  /** Attaches already-uploaded images (see /api/admin/uploads) to a product. */
+  static async addImages(productId: string, data: AddProductImagesInput) {
+    await ProductService.getProductById(productId);
+
+    const foreign = data.images.find((i) => StorageService.pathFromPublicUrl(i.url) === null);
+    if (foreign) {
+      throw AppError.badRequest("Images must be uploaded through the upload endpoint first");
+    }
+
+    await prisma.productImage.createMany({
+      data: data.images.map((i) => ({ ...i, productId })),
+    });
+
+    return prisma.productImage.findMany({ where: { productId } });
+  }
+
+  /** Removes an image from a product and deletes its file from storage. */
+  static async removeImage(productId: string, imageId: string) {
+    const image = await prisma.productImage.findUnique({ where: { id: imageId } });
+    if (!image || image.productId !== productId) {
+      throw AppError.notFound("Image not found");
+    }
+
+    await prisma.productImage.delete({ where: { id: imageId } });
+    await ProductService.cleanupImageFiles([image.url]);
   }
 
   /** Returns a variant only if it belongs to the given product. */
