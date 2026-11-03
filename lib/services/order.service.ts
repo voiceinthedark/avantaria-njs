@@ -14,7 +14,7 @@ export type OrderStatusUpdate = {
 };
 
 /** Allowed order status transitions. Final states have no way out. */
-const ORDER_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
+export const ORDER_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   PENDING: ["PROCESSING", "CANCELLED"],
   PROCESSING: ["SHIPPED", "CANCELLED"],
   SHIPPED: ["DELIVERED", "CANCELLED"],
@@ -196,6 +196,21 @@ export class OrderService {
     return order;
   }
 
+  /** Admin/Staff: one order with its customer, address and line items. */
+  static async getOrderDetail(id: string) {
+    const order = await prisma.order.findUnique({
+      where: { id },
+      include: {
+        user: {
+          select: { id: true, email: true, firstName: true, lastName: true, phone: true },
+        },
+        ...orderInclude,
+      },
+    });
+    if (!order) throw AppError.notFound("Order not found");
+    return order;
+  }
+
   // TODO: Implement refund logic (payment gateway side)
   /**
    * Updates order/payment status. Status changes must follow
@@ -224,7 +239,11 @@ export class OrderService {
       }
 
       const finalStatus = newStatus ?? order.status;
-      if (finalStatus === "CANCELLED" && data.paymentStatus === "COMPLETED") {
+      if (
+        finalStatus === "CANCELLED" &&
+        data.paymentStatus === "COMPLETED" &&
+        data.paymentStatus !== order.paymentStatus
+      ) {
         throw AppError.conflict("A cancelled order cannot be marked as paid");
       }
 

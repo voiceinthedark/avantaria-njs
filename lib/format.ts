@@ -6,7 +6,9 @@ const currency = new Intl.NumberFormat("en-US", {
   currency: "USD",
 });
 
-export const formatCurrency = (amount: number | string) => currency.format(Number(amount));
+// Accepts Prisma Decimals too (anything whose string form is a number).
+export const formatCurrency = (amount: number | string | { toString(): string }) =>
+  currency.format(Number(amount.toString()));
 
 const dateTime = new Intl.DateTimeFormat("en-GB", {
   dateStyle: "medium",
