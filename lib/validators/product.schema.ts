@@ -67,6 +67,11 @@ export const getProductByIdSchema = z.object({
   id: z.uuid("Invalid Product ID format"),
 });
 
+export const getProductVariantParamsSchema = z.object({
+  id: z.uuid("Invalid Product ID format"),
+  variantId: z.uuid("Invalid Variant ID format"),
+});
+
 export type CreateProductInput = z.infer<typeof createProductSchema>;
 export type UpdateProductInput = z.infer<typeof updateProductSchema>;
 export type ListProductsQuery = z.infer<typeof listProductsQuerySchema>;

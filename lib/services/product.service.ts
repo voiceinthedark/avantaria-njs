@@ -3,7 +3,9 @@ import { prisma } from "@/lib/db";
 import { AppError } from "@/lib/errors";
 import type {
   CreateProductInput,
+  CreateProductVariantInput,
   UpdateProductInput,
+  UpdateProductVariantInput,
   ListProductsQuery,
 } from "@/lib/validators/product.schema";
 
@@ -18,10 +20,7 @@ export class ProductService {
    * Paginated product list with average rating + review count.
    * Public callers only see active products.
    */
-  static async getProducts(
-    query: ListProductsQuery,
-    options: { includeInactive?: boolean } = {},
-  ) {
+  static async getProducts(query: ListProductsQuery, options: { includeInactive?: boolean } = {}) {
     const { page, limit, category, featured } = query;
 
     const where = {
@@ -51,11 +50,11 @@ export class ProductService {
     // One grouped query (per variant) instead of loading every review row.
     const grouped = variantToProduct.size
       ? await prisma.review.groupBy({
-          by: ["variantId"],
-          where: { variantId: { in: [...variantToProduct.keys()] } },
-          _avg: { rating: true },
-          _count: { rating: true },
-        })
+        by: ["variantId"],
+        where: { variantId: { in: [...variantToProduct.keys()] } },
+        _avg: { rating: true },
+        _count: { rating: true },
+      })
       : [];
 
     const statsByProduct = new Map<string, { sum: number; count: number }>();
@@ -189,5 +188,97 @@ export class ProductService {
 
     await prisma.product.delete({ where: { id } });
     return true;
+  }
+
+  /** Returns a variant only if it belongs to the given product. */
+  private static async getVariantOfProduct(productId: string, variantId: string) {
+    const variant = await prisma.productVariant.findUnique({
+      where: { id: variantId },
+    });
+    if (!variant || variant.productId !== productId) {
+      throw AppError.notFound("Variant not found");
+    }
+    return variant;
+  }
+
+  /** Throws 409 if the SKU or the size/color combination is already taken. */
+  private static async assertVariantUnique(
+    productId: string,
+    data: { sku?: string; size?: string; color?: string },
+    excludeVariantId?: string,
+  ) {
+    const notSelf = excludeVariantId ? { NOT: { id: excludeVariantId } } : {};
+
+    if (data.sku) {
+      const skuTaken = await prisma.productVariant.findFirst({
+        where: { sku: data.sku, ...notSelf },
+        select: { id: true },
+      });
+      if (skuTaken) throw AppError.conflict("SKU already in use");
+    }
+
+    if (data.size && data.color) {
+      const combo = await prisma.productVariant.findFirst({
+        where: { productId, size: data.size, color: data.color, ...notSelf },
+        select: { id: true },
+      });
+      if (combo) {
+        throw AppError.conflict("This product already has a variant with that size and color");
+      }
+    }
+  }
+
+  static async createVariant(productId: string, data: CreateProductVariantInput) {
+    await ProductService.getProductById(productId);
+    await ProductService.assertVariantUnique(productId, data);
+
+    return prisma.productVariant.create({ data: { ...data, productId } });
+  }
+
+  static async updateVariant(
+    productId: string,
+    variantId: string,
+    data: UpdateProductVariantInput,
+  ) {
+    const current = await ProductService.getVariantOfProduct(productId, variantId);
+
+    // Size and color are unique together, so check the merged result.
+    await ProductService.assertVariantUnique(
+      productId,
+      {
+        sku: data.sku,
+        size: data.size ?? current.size,
+        color: data.color ?? current.color,
+      },
+      variantId,
+    );
+
+    return prisma.productVariant.update({ where: { id: variantId }, data });
+  }
+
+  /**
+   * Deletes a variant. Refused if it was ever ordered (order items cascade
+   * with their variant, which would erase order history) or if it is the
+   * product's last variant.
+   */
+  static async deleteVariant(productId: string, variantId: string) {
+    await ProductService.getVariantOfProduct(productId, variantId);
+
+    const ordered = await prisma.orderItem.findFirst({
+      where: { variantId },
+      select: { id: true },
+    });
+    if (ordered) {
+      throw AppError.conflict(
+        "Cannot delete a variant that appears in orders. Set its stock to 0 instead",
+      );
+    }
+
+    const siblings = await prisma.productVariant.count({ where: { productId } });
+    if (siblings <= 1) {
+      throw AppError.conflict("A product must keep at least one variant");
+    }
+
+    await prisma.productVariant.delete({ where: { id: variantId } });
   }
 }
