@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Legacy Express backend kept only for reference while migrating.
+    "oldfiles/**",
   ]),
 ]);
 
