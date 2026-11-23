@@ -15,9 +15,7 @@ export type SessionPayload = {
 const secretKey = new TextEncoder().encode(env.JWT_SECRET);
 
 function isRole(value: unknown): value is Role {
-  return (
-    typeof value === "string" && (Object.values(Role) as string[]).includes(value)
-  );
+  return typeof value === "string" && (Object.values(Role) as string[]).includes(value);
 }
 
 /** Signs a JWT for the given user. */

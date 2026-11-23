@@ -132,6 +132,8 @@ export default async function ProductsPage({
                       <div className="flex items-center gap-3">
                         {image ? (
                           // Admin thumbnail: product images can come from any host, so plain <img>.
+                          // NOTE: use next/image if images are hosted on a known domain
+
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={image.url}
@@ -143,7 +145,11 @@ export default async function ProductsPage({
                           <div className="size-10 shrink-0 rounded-md bg-foreground/10" />
                         )}
                         <div className="min-w-0">
-                          <p className="truncate font-medium">{product.name}</p>
+                          <p className="truncate font-medium">
+                            <Link href={`${BASE_PATH}/${product.id}`} className="hover:underline">
+                              {product.name}
+                            </Link>
+                          </p>
                           <p className="truncate text-xs text-foreground/60">{product.slug}</p>
                         </div>
                       </div>
@@ -154,9 +160,8 @@ export default async function ProductsPage({
                     </td>
                     <td className="px-4 py-3 text-right">{product.variants.length}</td>
                     <td
-                      className={`px-4 py-3 text-right ${
-                        stock === 0 ? "font-medium text-red-600 dark:text-red-400" : ""
-                      }`}
+                      className={`px-4 py-3 text-right ${stock === 0 ? "font-medium text-red-600 dark:text-red-400" : ""
+                        }`}
                     >
                       {stock}
                     </td>
