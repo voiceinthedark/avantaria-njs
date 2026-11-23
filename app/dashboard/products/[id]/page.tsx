@@ -6,6 +6,8 @@ import { CategoryService } from "@/lib/services/category.service";
 import { ProductService } from "@/lib/services/product.service";
 import { getProductByIdSchema } from "@/lib/validators/product.schema";
 import ProductForm from "./product-form";
+import VariantForm from "./variant-form";
+import VariantRow from "./variant-row";
 
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
   await requireAdminUser();
@@ -45,6 +47,36 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
         }}
         categories={categories.map((c) => ({ id: c.id, name: c.name }))}
       />
+
+      <section className="space-y-4">
+        <h2 className="font-medium">Variants</h2>
+
+        {product.variants.length === 0 ? (
+          <p className="text-sm text-foreground/60">No variants yet.</p>
+        ) : (
+          <ul className="divide-y divide-foreground/10 rounded-xl border border-foreground/10">
+            {product.variants.map((variant) => (
+              <VariantRow
+                key={variant.id}
+                variant={{
+                  id: variant.id,
+                  productId: variant.productId,
+                  sku: variant.sku,
+                  size: variant.size,
+                  color: variant.color,
+                  stockQty: variant.stockQty,
+                  priceDelta: variant.priceDelta.toString(),
+                }}
+              />
+            ))}
+          </ul>
+        )}
+
+        <div className="space-y-3 rounded-xl border border-foreground/10 p-4">
+          <h3 className="text-sm font-medium">Add a variant</h3>
+          <VariantForm productId={product.id} />
+        </div>
+      </section>
     </div>
   );
 }
