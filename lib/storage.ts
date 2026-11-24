@@ -12,7 +12,7 @@ export const MAX_IMAGES_PER_UPLOAD = 5;
  * Row Level Security, so it must only be used in server code after an
  * authorization check. Never expose the key to the browser.
  */
-const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
+const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SECRET_KEY, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
 

@@ -16,8 +16,12 @@ const envSchema = z.object({
   // Supabase Storage (image uploads) — replaces Cloudinary, which is
   // unavailable in some regions.
   SUPABASE_URL: z.url("SUPABASE_URL must be a valid URL"),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1, "SUPABASE_SERVICE_ROLE_KEY is required"),
+  SUPABASE_SECRET_KEY: z.string().min(1, "SUPABASE_SECRET_KEY is required"),
   SUPABASE_STORAGE_BUCKET: z.string().min(1).default("product-images"),
+  NEXT_PUBLIC_SUPABASE_URL: z.url("NEXT_PUBLIC_SUPABASE_URL must be a valid URL"),
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z
+    .string()
+    .min(1, "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY is required"),
 
   // Temporary shared secret used to bootstrap the very first ADMIN account
   // via POST /api/auth/bootstrap-admin. The route self-disables once any

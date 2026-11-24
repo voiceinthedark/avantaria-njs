@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import type { ZodError } from "zod";
 import { AppError } from "@/lib/errors";
 import { requireAdminUser } from "@/lib/auth/dal";
+import { StorageService } from "@/lib/storage";
 import { ProductService } from "@/lib/services/product.service";
 import {
   createProductVariantSchema,
@@ -146,6 +147,36 @@ export async function deleteVariantAction(
   }
   refresh();
   return { ok: true };
+}
+
+export async function addImagesAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  await requireAdminUser();
+
+  const id = getProductByIdSchema.safeParse({ id: formData.get("productId") });
+  if (!id.success) return { ok: false, error: "Invalid product." };
+
+  // An empty file input still submits one zero-byte File.
+  const files = formData
+    .getAll("images")
+    .filter((value): value is File => value instanceof File && value.size > 0);
+  if (files.length === 0) return { ok: false, error: "Choose at least one image." };
+
+  let uploaded: { path: string; url: string }[] = [];
+  try {
+    uploaded = await StorageService.uploadImages(files);
+    await ProductService.addImages(id.data.id, {
+      images: uploaded.map(({ url }) => ({ url })),
+    });
+  } catch (error) {
+    // Don't leave files behind if they couldn't be attached to the product.
+    await StorageService.deleteByUrls(uploaded.map((u) => u.url));
+    return fail(error);
+  }
+  refresh();
+  return { ok: true, message: files.length === 1 ? "Image added." : "Images added." };
 }
 
 export async function removeImageAction(

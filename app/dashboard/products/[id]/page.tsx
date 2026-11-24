@@ -5,6 +5,8 @@ import { requireAdminUser } from "@/lib/auth/dal";
 import { CategoryService } from "@/lib/services/category.service";
 import { ProductService } from "@/lib/services/product.service";
 import { getProductByIdSchema } from "@/lib/validators/product.schema";
+import ImageForm from "./image-form";
+import ImageItem from "./image-item";
 import ProductForm from "./product-form";
 import VariantForm from "./variant-form";
 import VariantRow from "./variant-row";
@@ -75,6 +77,29 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
         <div className="space-y-3 rounded-xl border border-foreground/10 p-4">
           <h3 className="text-sm font-medium">Add a variant</h3>
           <VariantForm productId={product.id} />
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="font-medium">Images</h2>
+
+        {product.images.length === 0 ? (
+          <p className="text-sm text-foreground/60">No images yet.</p>
+        ) : (
+          <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+            {product.images.map((image) => (
+              <ImageItem
+                key={image.id}
+                productId={product.id}
+                image={{ id: image.id, url: image.url, altText: image.altText }}
+              />
+            ))}
+          </ul>
+        )}
+
+        <div className="space-y-3 rounded-xl border border-foreground/10 p-4">
+          <h3 className="text-sm font-medium">Add images</h3>
+          <ImageForm productId={product.id} />
         </div>
       </section>
     </div>

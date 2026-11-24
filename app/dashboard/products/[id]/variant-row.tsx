@@ -68,6 +68,7 @@ export default function VariantRow({ variant }: VariantRowProps) {
           />
         </Field>
 
+        {/* TODO: Size should be a select with the sizes the product supports. */}
         <Field label="Size" htmlFor={`variant-size-${id}`}>
           <input
             id={`variant-size-${id}`}
