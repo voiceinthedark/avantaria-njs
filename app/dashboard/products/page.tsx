@@ -51,7 +51,12 @@ export default async function ProductsPage({
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-semibold">Products</h1>
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="text-xl font-semibold">Products</h1>
+        <Link href={`${BASE_PATH}/add`} className={buttonClass}>
+          New product
+        </Link>
+      </div>
 
       {!parsed.success && (
         <p role="alert" className="text-sm text-amber-700 dark:text-amber-400">

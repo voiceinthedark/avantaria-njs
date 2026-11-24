@@ -1,9 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import type { ZodError } from "zod";
-import { AppError } from "@/lib/errors";
 import { requireAdminUser } from "@/lib/auth/dal";
 import { StorageService } from "@/lib/storage";
 import { ProductService } from "@/lib/services/product.service";
@@ -16,32 +13,12 @@ import {
   updateProductVariantSchema,
 } from "@/lib/validators/product.schema";
 import type { ActionState } from "../../_components/form-message";
+import { text, number, issueMessage, fail, refresh } from "../../_lib/action-helpers";
 
 /*
  * Server Actions are public POST endpoints, so every action re-checks that
  * the caller is an admin (matching the admin-only product API routes).
  */
-
-const text = (value: FormDataEntryValue | null) =>
-  typeof value === "string" ? value.trim() : undefined;
-
-/** Empty inputs become undefined so validation reports them as missing. */
-const number = (value: FormDataEntryValue | null) =>
-  typeof value === "string" && value.trim() !== "" ? Number(value) : undefined;
-
-function issueMessage(error: ZodError) {
-  const issue = error.issues[0];
-  if (!issue) return "Invalid input.";
-  return issue.path.length ? `${issue.path.join(".")}: ${issue.message}` : issue.message;
-}
-
-/** Turns expected service errors into form messages; rethrows anything else. */
-function fail(error: unknown): ActionState {
-  if (error instanceof AppError) return { ok: false, error: error.message };
-  throw error;
-}
-
-const refresh = () => revalidatePath("/dashboard", "layout");
 
 export async function updateProductAction(
   _prev: ActionState,
