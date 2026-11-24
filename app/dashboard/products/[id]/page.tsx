@@ -5,6 +5,7 @@ import { requireAdminUser } from "@/lib/auth/dal";
 import { CategoryService } from "@/lib/services/category.service";
 import { ProductService } from "@/lib/services/product.service";
 import { getProductByIdSchema } from "@/lib/validators/product.schema";
+import DeleteProductForm from "./delete-product-form";
 import ImageForm from "./image-form";
 import ImageItem from "./image-item";
 import ProductForm from "./product-form";
@@ -101,6 +102,15 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
           <h3 className="text-sm font-medium">Add images</h3>
           <ImageForm productId={product.id} />
         </div>
+      </section>
+
+      <section className="space-y-3 rounded-xl border border-red-600/30 p-4">
+        <h2 className="font-medium text-red-600 dark:text-red-400">Danger zone</h2>
+        <p className="text-sm text-foreground/60">
+          Deleting removes the product, its variants and its images. If it appears in existing
+          orders, it is deactivated instead so order history stays intact.
+        </p>
+        <DeleteProductForm productId={product.id} productName={product.name} />
       </section>
     </div>
   );

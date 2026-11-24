@@ -1,6 +1,6 @@
 {
   "name": "avantaria-store",
-  "version": "0.22.25",
+  "version": "0.23.07",
   "private": true,
   "scripts": {
     "dev": "next dev",

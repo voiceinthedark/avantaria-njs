@@ -8,3 +8,6 @@ export const buttonClass =
 
 export const secondaryButtonClass =
   "rounded-md border border-foreground/20 px-3 py-2 text-sm hover:bg-foreground/5";
+
+export const deleteButtonClass =
+  "rounded-md border border-red-600/40 px-3 py-2 text-sm text-red-600 hover:bg-red-600/5 dark:text-red-400";
