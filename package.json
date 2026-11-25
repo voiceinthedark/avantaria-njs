@@ -1,6 +1,6 @@
 {
   "name": "avantaria-store",
-  "version": "0.24.18",
+  "version": "0.24.25",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -34,5 +34,5 @@
     "tailwindcss": "^4",
     "typescript": "^5"
   },
-  "packageManager": "pnpm@12.21.0"
+  "packageManager": "pnpm@12.23.0"
 }
