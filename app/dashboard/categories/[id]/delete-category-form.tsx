@@ -1,9 +1,9 @@
 "use client";
 
 import { useActionState } from "react";
-import { DeleteCategoryAction } from "./actions";
-import { FormMessage } from "../_components/form-message";
-import { deleteButtonClass } from "../_components/form-styles";
+import { DeleteCategoryAction } from "../actions";
+import { FormMessage } from "../../_components/form-message";
+import { deleteButtonClass } from "../../_components/form-styles";
 
 type DeleteCategoryFormProps = {
   categoryId: string;
