@@ -8,6 +8,7 @@ const items = [
   { href: "/dashboard", label: "Overview", exact: true },
   { href: "/dashboard/orders", label: "Orders", exact: false },
   { href: "/dashboard/products", label: "Products", exact: false },
+  { href: "/dashboard/categories", label: "Categories", exact: false },
 ];
 
 export function DashboardNav() {
