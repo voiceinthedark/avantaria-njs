@@ -9,13 +9,14 @@ import {
   deleteCategorySchema,
 } from "@/lib/validators/category.schema";
 import type { ActionState } from "../_components/form-message";
-import { text, issueMessage, fail } from "../_lib/action-helpers";
+import { text, issueMessage, fail, refresh } from "../_lib/action-helpers";
+import { redirect } from "next/navigation";
 
-export async function CreateCategoryAction(
+export async function createCategoryAction(
   _prevState: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  requireAdminUser();
+  await requireAdminUser();
 
   const data = createCategorySchema.safeParse({
     name: text(formData.get("name")),
@@ -29,13 +30,15 @@ export async function CreateCategoryAction(
   } catch (error) {
     return fail(error);
   }
+  refresh();
+  redirect("/dashboard/categories");
 }
 
-export async function UpdateCategoryAction(
+export async function updateCategoryAction(
   _prevState: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  requireAdminUser();
+  await requireAdminUser();
 
   const id = getCategoryByIdSchema.safeParse({ id: formData.get("id") });
   if (!id.success) return { ok: false, error: "Invalid category." };
@@ -52,13 +55,15 @@ export async function UpdateCategoryAction(
   } catch (error) {
     return fail(error);
   }
+  refresh();
+  return { ok: true, message: "Category saved." };
 }
 
-export async function DeleteCategoryAction(
+export async function deleteCategoryAction(
   _prevState: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  requireAdminUser();
+  await requireAdminUser();
 
   const id = deleteCategorySchema.safeParse({ id: formData.get("id") });
   if (!id.success) return { ok: false, error: "Invalid category." };
@@ -68,4 +73,6 @@ export async function DeleteCategoryAction(
   } catch (error) {
     return fail(error);
   }
+  refresh();
+  redirect("/dashboard/categories");
 }

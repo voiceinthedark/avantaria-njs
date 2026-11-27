@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { DeleteCategoryAction } from "../actions";
+import { deleteCategoryAction } from "../actions";
 import { FormMessage } from "../../_components/form-message";
 import { deleteButtonClass } from "../../_components/form-styles";
 
@@ -16,7 +16,7 @@ type DeleteCategoryFormProps = {
  * explaining that, which is shown here.
  * */
 export default function DeleteCategoryForm({ categoryId, categoryName }: DeleteCategoryFormProps) {
-  const [state, action, pending] = useActionState(DeleteCategoryAction, undefined);
+  const [state, action, pending] = useActionState(deleteCategoryAction, undefined);
 
   return (
     <form
@@ -24,7 +24,7 @@ export default function DeleteCategoryForm({ categoryId, categoryName }: DeleteC
       onSubmit={(e) => {
         if (
           !confirm(
-            `Delete "${categoryName}"? Its products are not deleted, but they will no longer be categorized.`,
+            `Delete "${categoryName}"? This cannot be undone. If the category has products, it will not be deleted.`,
           )
         ) {
           e.preventDefault();

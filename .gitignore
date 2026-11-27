@@ -45,3 +45,4 @@ next-env.d.ts
 /oldfiles/api
 /.github
 /planAction1.md
+/rest.http

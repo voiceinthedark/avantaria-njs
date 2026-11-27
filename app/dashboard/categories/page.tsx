@@ -1,12 +1,12 @@
 // categories/page.tsx
 
 import Link from "next/link";
-import { requireStaffUser } from "@/lib/auth/dal";
+import { requireAdminUser } from "@/lib/auth/dal";
 import { CategoryService } from "@/lib/services/category.service";
 import { buttonClass } from "../_components/form-styles";
 
 export default async function CategoriesPage() {
-  await requireStaffUser();
+  await requireAdminUser();
 
   const categories = await CategoryService.getAllCategories();
 

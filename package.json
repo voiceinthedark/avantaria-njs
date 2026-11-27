@@ -1,6 +1,6 @@
 {
   "name": "avantaria-store",
-  "version": "0.26.06",
+  "version": "0.26.34",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "db:generate": "pnpm --filter @store/db db:generate",
     "db:push": "pnpm --filter @store/db db:push",
-    "db:seed": "pnpm --filter @store/db db:seed"
+    "db:seed": "pnpm --filter @store/db db:seed",
+    "db:studio": "pnpm --filter @store/db db:studio"
   },
   "dependencies": {
     "@store/db": "workspace:*",
